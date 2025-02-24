@@ -6,9 +6,11 @@
 #include <gst/app/gstappsrc.h>
 #include <gst/rtsp-server/rtsp-server.h>
 #include <ros/ros.h>
-#include "sensor_msgs/Image.h"
+#include <sensor_msgs/CompressedImage.h>
 #include <sensor_msgs/image_encodings.h>
 #include <image2rtsp.h>
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/opencv.hpp>
 
 
 using namespace std;
@@ -78,6 +80,27 @@ void Image2RTSPNodelet::onInit() {
     }
 }
 
+sensor_msgs::Image::ConstPtr Image2RTSPNodelet::convertCompressedImageToImage(const sensor_msgs::CompressedImage::ConstPtr& compressed_msg) const
+{
+    try
+    {
+        // Convert the compressed image to an OpenCV Mat
+        cv::Mat image = cv::imdecode(cv::Mat(compressed_msg->data), cv::IMREAD_UNCHANGED);
+
+        // Convert OpenCV Mat to a sensor_msgs::Image
+        std_msgs::Header header = compressed_msg->header;  // Preserve header information
+        sensor_msgs::ImagePtr image_msg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
+
+        return image_msg;  // Return as ConstPtr
+    }
+    catch (const cv::Exception& e)
+    {
+        ROS_ERROR("cv::Exception: %s", e.what());
+        return nullptr;
+    }
+}
+
+
 /* Modified from https://github.com/ProjectArtemis/gst_video_server/blob/master/src/server_nodelet.cpp */
 GstCaps* Image2RTSPNodelet::gst_caps_new_from_image(const sensor_msgs::Image::ConstPtr &msg)
 {
@@ -115,7 +138,8 @@ GstCaps* Image2RTSPNodelet::gst_caps_new_from_image(const sensor_msgs::Image::Co
 }
 
 
-void Image2RTSPNodelet::imageCallback(const sensor_msgs::Image::ConstPtr& msg, const std::string& topic) {
+void Image2RTSPNodelet::imageCallback(const sensor_msgs::CompressedImage::ConstPtr& comp_msg, const std::string& topic) {
+    const auto msg = convertCompressedImageToImage(comp_msg);
     GstBuffer *buf;
 
     GstCaps *caps;
@@ -159,7 +183,7 @@ void Image2RTSPNodelet::url_connected(string url) {
 
             if (num_of_clients[url]==0) {
                 // Subscribe to the ROS topic
-                subs[url] = nh.subscribe<sensor_msgs::Image>(source, 1, boost::bind(&Image2RTSPNodelet::imageCallback, this, boost::placeholders::_1, url));
+                subs[url] = nh.subscribe<sensor_msgs::CompressedImage>(source, 1, boost::bind(&Image2RTSPNodelet::imageCallback, this, boost::placeholders::_1, url));
             }
             num_of_clients[url]++;
         }

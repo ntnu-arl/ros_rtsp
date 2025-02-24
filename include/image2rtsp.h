@@ -1,6 +1,9 @@
 #ifndef IMAGE_TO_RTSP_H
 #define IMAGE_TO_RTSP_H
 
+#include <sensor_msgs/CompressedImage.h>
+#include <sensor_msgs/Image.h>
+
 namespace image2rtsp {
     class Image2RTSPNodelet : public nodelet::Nodelet {
         public:
@@ -17,10 +20,11 @@ namespace image2rtsp {
             std::map<std::string, GstAppSrc*> appsrc;
             std::map<std::string, int> num_of_clients;
             GstCaps* gst_caps_new_from_image(const sensor_msgs::Image::ConstPtr &msg);
-            void imageCallback(const sensor_msgs::Image::ConstPtr& msg, const std::string& topic);
+            void imageCallback(const sensor_msgs::CompressedImage::ConstPtr& comp_msg, const std::string& topic);
             void video_mainloop_start();
             void rtsp_server_add_url(const char *url, const char *sPipeline, GstElement **appsrc);
             GstRTSPServer *rtsp_server_create(const std::string& port);
+            sensor_msgs::Image::ConstPtr convertCompressedImageToImage(const sensor_msgs::CompressedImage::ConstPtr& compressed_msg) const;
     };
 }
 

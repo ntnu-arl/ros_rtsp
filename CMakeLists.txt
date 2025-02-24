@@ -125,6 +125,7 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${GST_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -156,6 +157,7 @@ add_library(image_to_rtsp_nodelet src/image2rtsp.cpp src/video.cpp)
 target_link_libraries(image_to_rtsp_nodelet 
   ${catkin_LIBRARIES} 
   ${GST_LIBRARIES} 
+  ${OpenCV_LIBRARIES}
 )
 
 
