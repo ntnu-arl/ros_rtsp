@@ -4,7 +4,7 @@ streams: # Cannot rename - must leave this as is.
 
   stream-cam:
     type: topic
-    source: /cam0/cam0  
+    source: /cam0/cam0/compressed
     mountpoint: /back
     caps: video/x-raw,framerate=10/1,width=720,height=540
     bitrate: 500

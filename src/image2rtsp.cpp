@@ -9,7 +9,6 @@
 #include <sensor_msgs/CompressedImage.h>
 #include <sensor_msgs/image_encodings.h>
 #include <image2rtsp.h>
-#include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 
 
@@ -38,7 +37,7 @@ void Image2RTSPNodelet::onInit() {
     nh.getParam("port", this->port);
 
     video_mainloop_start();
-  rtsp_server = rtsp_server_create(port);
+    rtsp_server = rtsp_server_create(port);
 
     // Go through and parse each stream
     for(XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = streams.begin(); it != streams.end(); ++it)
@@ -80,25 +79,23 @@ void Image2RTSPNodelet::onInit() {
     }
 }
 
-sensor_msgs::Image::ConstPtr Image2RTSPNodelet::convertCompressedImageToImage(const sensor_msgs::CompressedImage::ConstPtr& compressed_msg) const
+sensor_msgs::Image::ConstPtr Image2RTSPNodelet::convertCompressedImageToImage(
+    const sensor_msgs::CompressedImage::ConstPtr& compressed_msg) const
 {
+    // Use cv_bridge to convert the compressed image to a sensor_msgs::Image
     try
     {
-        // Convert the compressed image to an OpenCV Mat
-        cv::Mat image = cv::imdecode(cv::Mat(compressed_msg->data), cv::IMREAD_UNCHANGED);
-
-        // Convert OpenCV Mat to a sensor_msgs::Image
-        std_msgs::Header header = compressed_msg->header;  // Preserve header information
-        sensor_msgs::ImagePtr image_msg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
-
-        return image_msg;  // Return as ConstPtr
+        // Provide an appropriate encoding (e.g., "bgr8" or "mono8" based on your input)
+        cv_bridge::CvImagePtr img = cv_bridge::toCvCopy(compressed_msg, sensor_msgs::image_encodings::BGR8);
+        return img->toImageMsg();
     }
-    catch (const cv::Exception& e)
+    catch (const cv_bridge::Exception& e)
     {
-        ROS_ERROR("cv::Exception: %s", e.what());
+        std::cout << "cv_bridge exception: " << e.what() << std::endl;
         return nullptr;
     }
 }
+
 
 
 /* Modified from https://github.com/ProjectArtemis/gst_video_server/blob/master/src/server_nodelet.cpp */

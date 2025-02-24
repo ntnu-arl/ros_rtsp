@@ -1,6 +1,7 @@
 #ifndef IMAGE_TO_RTSP_H
 #define IMAGE_TO_RTSP_H
 
+#include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/CompressedImage.h>
 #include <sensor_msgs/Image.h>
 
@@ -15,7 +16,7 @@ namespace image2rtsp {
             void print_error(char *s);
 
         private:
-      std::string port;
+            std::string port;
             std::map<std::string, ros::Subscriber> subs;
             std::map<std::string, GstAppSrc*> appsrc;
             std::map<std::string, int> num_of_clients;
