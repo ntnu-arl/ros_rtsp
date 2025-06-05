@@ -87,6 +87,7 @@ sensor_msgs::Image::ConstPtr Image2RTSPNodelet::convertCompressedImageToImage(
     {
         // Provide an appropriate encoding (e.g., "bgr8" or "mono8" based on your input)
         cv_bridge::CvImagePtr img = cv_bridge::toCvCopy(compressed_msg, sensor_msgs::image_encodings::BGR8);
+        cv::resize(img->image, img->image, cv::Size(80, 60), cv::INTER_LINEAR);
         return img->toImageMsg();
     }
     catch (const cv_bridge::Exception& e)
