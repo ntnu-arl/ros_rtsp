@@ -9,3 +9,7 @@ streams: # Cannot rename - must leave this as is.
     caps: video/x-raw,framerate=10/1,width=80,height=60
     bitrate: 500
 
+image_resolution: # Set the resolution of the image to be published.
+  width: 80
+  height: 60
+

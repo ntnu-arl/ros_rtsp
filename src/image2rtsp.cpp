@@ -35,6 +35,8 @@ void Image2RTSPNodelet::onInit() {
     ROS_ASSERT(streams.getType() == XmlRpc::XmlRpcValue::TypeStruct);
     ROS_DEBUG("Number of RTSP streams: %d", streams.size());
     nh.getParam("port", this->port);
+    nh.getParam("image_resolution/width", this->image_size.width);
+    nh.getParam("image_resolution/height", this->image_size.height);
 
     video_mainloop_start();
     rtsp_server = rtsp_server_create(port);
@@ -87,7 +89,7 @@ sensor_msgs::Image::ConstPtr Image2RTSPNodelet::convertCompressedImageToImage(
     {
         // Provide an appropriate encoding (e.g., "bgr8" or "mono8" based on your input)
         cv_bridge::CvImagePtr img = cv_bridge::toCvCopy(compressed_msg, sensor_msgs::image_encodings::BGR8);
-        cv::resize(img->image, img->image, cv::Size(80, 60), cv::INTER_LINEAR);
+        cv::resize(img->image, img->image, cv::Size(image_size.width, image_size.height), cv::INTER_LINEAR);
         return img->toImageMsg();
     }
     catch (const cv_bridge::Exception& e)

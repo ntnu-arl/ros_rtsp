@@ -17,6 +17,10 @@ namespace image2rtsp {
 
         private:
             std::string port;
+            struct ImageSize {
+                int width;
+                int height;
+            } image_size;
             std::map<std::string, ros::Subscriber> subs;
             std::map<std::string, GstAppSrc*> appsrc;
             std::map<std::string, int> num_of_clients;
