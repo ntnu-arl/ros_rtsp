@@ -20,7 +20,7 @@ void Image2RTSPNodelet::onInit() {
     string pipeline, mountpoint, bitrate, caps;
     string pipeline_tail =  " key-int-max=30 ! video/x-h264, profile=baseline ! rtph264pay name=pay0 pt=96 )"; // Gets completed based on rosparams below
 
-    NODELET_DEBUG("Initializing image2rtsp nodelet...");
+    NODELET_DEBUG("[image2rtsp] Initializing image2rtsp nodelet...");
 
     if (getenv((char*)"GST_DEBUG") == NULL) {
         // set GST_DEBUG to warning if unset
@@ -33,7 +33,7 @@ void Image2RTSPNodelet::onInit() {
     XmlRpc::XmlRpcValue streams;
     nh.getParam("streams", streams);
     ROS_ASSERT(streams.getType() == XmlRpc::XmlRpcValue::TypeStruct);
-    ROS_DEBUG("Number of RTSP streams: %d", streams.size());
+    ROS_DEBUG("[image2rtsp] Number of RTSP streams: %d", streams.size());
     nh.getParam("port", this->port);
 
     video_mainloop_start();
@@ -43,7 +43,7 @@ void Image2RTSPNodelet::onInit() {
     for(XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = streams.begin(); it != streams.end(); ++it)
     {
         XmlRpc::XmlRpcValue stream = streams[it->first];
-        ROS_DEBUG_STREAM("Found stream: " << (std::string)(it->first) << " ==> " << stream);
+        ROS_DEBUG_STREAM("[image2rtsp] Found stream: " << (std::string)(it->first) << " ==> " << stream);
 
         // Convert to string for ease of use
         mountpoint = static_cast<std::string>(stream["mountpoint"]);
@@ -73,9 +73,10 @@ void Image2RTSPNodelet::onInit() {
         }
         else
         {
-            ROS_ERROR("Undefined stream type. Check your stream_setup.yaml file.");
+            ROS_ERROR("[image2rtsp] Undefined stream type. Check your stream_setup.yaml file.");
         }
-        NODELET_INFO("Stream available at rtsp://%s:%s%s", gst_rtsp_server_get_address(rtsp_server), port.c_str(), mountpoint.c_str());
+        NODELET_INFO("[image2rtsp] Listening to ROS topic '%s'", static_cast<std::string>(stream["source"]).c_str());
+        NODELET_INFO("[image2rtsp] Stream available at rtsp://%s:%s%s", gst_rtsp_server_get_address(rtsp_server), port.c_str(), mountpoint.c_str());
     }
 }
 
@@ -117,13 +118,13 @@ GstCaps* Image2RTSPNodelet::gst_caps_new_from_image(const sensor_msgs::Image::Co
     }};
 
     if (msg->is_bigendian) {
-        ROS_ERROR("GST: big endian image format is not supported");
+        ROS_ERROR("[image2rtsp] GST: big endian image format is not supported");
         return nullptr;
     }
 
     auto format = known_formats.find(msg->encoding);
     if (format == known_formats.end()) {
-        ROS_ERROR("GST: image format '%s' unknown", msg->encoding.c_str());
+        ROS_ERROR("[image2rtsp] GST: image format '%s' unknown", msg->encoding.c_str());
         return nullptr;
     }
 
